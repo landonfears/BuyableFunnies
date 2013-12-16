@@ -1,9 +1,9 @@
-/*v1.0*/
 (function() {
 		  
 /* Buyable Funnies Object */
 BuyableFunnies = function() {
 	/* User Widget Options */
+	this.key = '';
 	this.tag = ''; // Amazon ID
 	this.ext = ''; // Amazon Country Code extension
 	this.font = '';
@@ -17,11 +17,13 @@ BuyableFunnies = function() {
 	this.end = 0; 	// End Day (0 for init)
 	
 	/* Scripts, styles and paths */
-	this.script = 'buyable_funnies_widget.js';
+	this.script = 'buyable_funnies_embed.js';
 	this.domain = 'http://buyablefunnies.com/';
 	this.path = 'https://d30exyil9uoqwq.cloudfront.net/';
-	this.css = this.path+'buyable_funnies_widget.css';
-	this.ajax = this.domain+'?buyable_funnies_widget=yes';
+	this.css_widget = this.path+'buyable_funnies_widget.css';
+	this.css_custom = this.path+'buyable_funnies_custom.css';
+	this.ajax_widget = this.domain+'?buyable_funnies_widget=yes';
+	this.ajax_custom = this.domain+'?buyable_funnies_custom=yes';
 	this.widget_title = 'Buyable Funnies';
 	
 	/* Save retrieved funnies */
@@ -58,34 +60,74 @@ BuyableFunnies.prototype = {
 		//console.dir(data);
 		
 		// Check this.current to see if this the 1st return call
-		if(!BuyableFunniesWidget.current){
+		if(!BuyableFunniesEmbed.current){
 			// Set start and end timestamp
-			BuyableFunniesWidget.start = data.date_start;
-			BuyableFunniesWidget.end = data.date_current;
+			BuyableFunniesEmbed.start = data.date_start;
+			BuyableFunniesEmbed.end = data.date_current;
 			
 			// Save User Widget Options if they are	
-			if(data.hasOwnProperty('aid')) BuyableFunniesWidget.tag = data.aid;
-			if(data.hasOwnProperty('ext')) BuyableFunniesWidget.ext = data.ext;
-			if(data.hasOwnProperty('font')) BuyableFunniesWidget.font = data.font;
-			if(data.hasOwnProperty('link_color')) BuyableFunniesWidget.link_color = data.link_color;
+			if(data.hasOwnProperty('aid')) BuyableFunniesEmbed.tag = data.aid;
+			if(data.hasOwnProperty('ext')) BuyableFunniesEmbed.ext = data.ext;
+			if(data.hasOwnProperty('font')) BuyableFunniesEmbed.font = data.font;
+			if(data.hasOwnProperty('link_color')) BuyableFunniesEmbed.link_color = data.link_color;
 		}
 		
 		// Set current, next and prev timestamps
-		BuyableFunniesWidget.current = data.date_current;
-		BuyableFunniesWidget.prev = data.date_prev;
-		BuyableFunniesWidget.next = data.date_next;
+		BuyableFunniesEmbed.current = data.date_current;
+		BuyableFunniesEmbed.prev = data.date_prev;
+		BuyableFunniesEmbed.next = data.date_next;
 		
 		// Save funnies info in funnies object
-		BuyableFunniesWidget.funnies[BuyableFunniesWidget.current] = {
-			next : BuyableFunniesWidget.next,
-			prev : BuyableFunniesWidget.prev,
-			curr : BuyableFunniesWidget.current,
+		BuyableFunniesEmbed.funnies[BuyableFunniesEmbed.current] = {
+			next : BuyableFunniesEmbed.next,
+			prev : BuyableFunniesEmbed.prev,
+			curr : BuyableFunniesEmbed.current,
 			date_format : data.date_format,
 			product : data.product
 		};
 		
-		BuyableFunniesWidget.displayHTML();
-		//BuyableFunniesWidget.hideLoading();
+		BuyableFunniesEmbed.displayHTML();
+		//BuyableFunniesEmbed.hideLoading();
+	},
+	bfc_cb : function(data){
+		jQuery.each(data, function(){
+			var init_html = '';
+			init_html += '<div class="buyablefunnies_custom_content buyablefunnies_custom_clearfix">';
+			init_html += '<a class="buyablefunnies_custom_product buyablefunnies_custom_product1" href="'+this.url1+'" title="'+this.title1+'" target="_blank">';
+			init_html += '<h4>'+this.text1+'</h4>';
+			init_html += '<div class="buyablefunnies_custom_img_wrap">';
+			init_html += '<div class="buyablefunnies_custom_img"><img src="'+this.filename1+'" alt="'+this.title1+'" title="'+this.title1+'" /></div>';
+			init_html += '</div>';
+			if(this.dname1 != '') init_html += '<h5>'+this.dname1+'</h5>';
+			if(this.price1 != '') init_html += '<div class="buyablefunnies_custom_price">'+this.price2+'</div>';
+			init_html += '</a>';
+			
+			init_html += '<a class="buyablefunnies_custom_product buyablefunnies_custom_product2" href="'+this.url2+'" title="'+this.title2+'" target="_blank">';
+			init_html += '<h4>'+this.text2+'</h4>';
+			init_html += '<div class="buyablefunnies_custom_img_wrap">';
+			init_html += '<div class="buyablefunnies_custom_img"><img src="'+this.filename2+'" alt="'+this.title2+'" title="'+this.title2+'" class="" /></div>';
+			init_html += '</div>';
+			if(this.dname2 != '') init_html += '<h5>'+this.dname2+'</h5>';
+			if(this.price2 != '') init_html += '<div class="buyablefunnies_custom_price">'+this.price2+'</div>';
+			init_html += '</div>';
+			init_html += '</a>';
+			
+			//console.log('put data in: #buyablefunnies_'+this.cfid);
+			jQuery('#buyablefunnies_'+this.cfid).html(init_html);
+			
+			// Update hover link color
+			var custom_data = this;
+			jQuery('#buyablefunnies_'+this.cfid+' .buyablefunnies_custom_product').hover(function(){
+				BuyableFunniesEmbed.styleAttr(jQuery(this),'color:'+custom_data.hcolor+' !important');
+			},
+			function(){ BuyableFunniesEmbed.styleAttr(jQuery(this),'color:#000000 !important'); });
+			
+			// Update font
+			if(this.font != '') BuyableFunniesEmbed.styleAttr(jQuery('#buyablefunnies_'+this.cfid),'font-family:'+this.font+' !important');
+		
+			// Show the custom funny
+			BuyableFunniesEmbed.styleAttr(jQuery('#buyablefunnies_'+this.cfid),'display:block !important');
+		});
 	},
 	errorContent : function(){
 		// display products
@@ -95,11 +137,11 @@ BuyableFunnies.prototype = {
 		jQuery('.buyablefunnies_widget_product1').attr('title',this.error.title1);
 		jQuery('.buyablefunnies_widget_product2').attr('title',this.error.title2);
 		
-		jQuery('.buyablefunnies_widget_product1 .buyablefunnies_widget_h4').text(this.error.text1);
-		jQuery('.buyablefunnies_widget_product2 .buyablefunnies_widget_h4').text(this.error.text2);
+		jQuery('.buyablefunnies_widget_product1 h4').text(this.error.text1);
+		jQuery('.buyablefunnies_widget_product2 h4').text(this.error.text2);
 		
-		jQuery('.buyablefunnies_widget_product1 .buyablefunnies_widget_h5').text(this.error.nickname1);
-		jQuery('.buyablefunnies_widget_product2 .buyablefunnies_widget_h5').text(this.error.nickname2);
+		jQuery('.buyablefunnies_widget_product1 h5').text(this.error.nickname1);
+		jQuery('.buyablefunnies_widget_product2 h5').text(this.error.nickname2);
 		
 		jQuery('.buyablefunnies_widget_product1 .buyablefunnies_widget_price').html(this.error.price1);
 		jQuery('.buyablefunnies_widget_product2 .buyablefunnies_widget_price').html(this.error.price2);
@@ -120,12 +162,12 @@ BuyableFunnies.prototype = {
 		
 		this.finishCall();
 	},
-	init : function(){
+	initWidget : function(){
 		// Set CSS link in header
 		var css_link = jQuery("<link>", { 
 			rel: "stylesheet", 
 			type: "text/css", 
-			href: this.css 
+			href: this.css_widget 
 		});
 		css_link.appendTo('head');
 		
@@ -140,20 +182,20 @@ BuyableFunnies.prototype = {
 		init_html += '<div class="buyablefunnies_widget_content buyablefunnies_widget_clearfix">';
 		
 		init_html += '<a class="buyablefunnies_widget_product buyablefunnies_widget_product1" href="#" title="" target="_blank">';
-		init_html += '<div class="buyablefunnies_widget_h4"></div>';
+		init_html += '<h4></h4>';
     	init_html += '<div class="buyablefunnies_widget_img_wrap">';
         init_html += '<div class="buyablefunnies_widget_img"><img src="" alt="" title="" class="" /></div>';
     	init_html += '</div>';
-   	 	init_html += '<div class="buyablefunnies_widget_h5"></div>';
+   	 	init_html += '<h5></h5>';
     	init_html += '<div class="buyablefunnies_widget_price"></div>';
 		init_html += '</a>';
 		
 		init_html += '<a class="buyablefunnies_widget_product buyablefunnies_widget_product2" href="#" title="" target="_blank">';
-		init_html += '<div class="buyablefunnies_widget_h4"></div>';
+		init_html += '<h4></h4>';
     	init_html += '<div class="buyablefunnies_widget_img_wrap">';
         init_html += '<div class="buyablefunnies_widget_img"><img src="" alt="" title="" class="" /></div>';
     	init_html += '</div>';
-   	 	init_html += '<div class="buyablefunnies_widget_h5"></div>';
+   	 	init_html += '<h5></h5>';
     	init_html += '<div class="buyablefunnies_widget_price"></div>';
 		init_html += '</a>';
 		
@@ -161,59 +203,94 @@ BuyableFunnies.prototype = {
 		init_html += '</div>';
 		
 		jQuery('.buyablefunnies_widget').html(init_html);
+		
+		//jQuery('.buyablefunnies_widget div').css('width', '200px');
+		//jQuery('.buyablefunnies_widget a, .buyablefunnies_widget div, .buyablefunnies_widget img').css('width', '100%');
 
 		jQuery('.buyablefunnies_widget').waitForImages(function() {
-			jQuery('.buyablefunnies_widget').show();
-			BuyableFunniesWidget.key = BuyableFunniesWidget.getParams(BuyableFunniesWidget.script)['key'];
-			BuyableFunniesWidget.controlsEvent();
-			BuyableFunniesWidget.prepareCall(0);
+			BuyableFunniesEmbed.styleAttr(jQuery('.buyablefunnies_widget'),'display:block !important');
+			BuyableFunniesEmbed.key = BuyableFunniesEmbed.getParams(BuyableFunniesEmbed.script)['key'];
+			BuyableFunniesEmbed.controlsEvent();
+			BuyableFunniesEmbed.prepareCall(0);
 		});
 	},
+	initCustom : function(){
+		// Set CSS link in header
+		var css_link = jQuery("<link>", { 
+			rel: "stylesheet", 
+			type: "text/css", 
+			href: this.css_custom 
+		});
+		css_link.appendTo('head');
+		
+		var cfo = [];
+		var count = 0;
+		jQuery('.buyablefunnies_custom').each(function() {
+			var sep = jQuery(this).attr('id').split('_');
+			var cfid = parseInt(sep[1]);
+			cfo[count] = cfid;
+			count++;							   
+		});
+		var scfo = JSON.stringify( cfo );	
+		if(this.key == '') this.key = this.getParams(this.script)['key'];
+		this.ajaxCall(this.ajax_custom+'&key='+this.key+'&ids='+scfo,'BuyableFunniesCustom_CallBack',0,'custom');
+	},
 	prepareCall : function(timestamp){
-		jQuery('.buyablefunnies_widget_content').fadeOut('fast', function(){
+		//console.log('call: '+BuyableFunniesEmbed.ajax+'?action=getBuyableFunny&key='+BuyableFunniesEmbed.key+'&current='+BuyableFunniesEmbed.current);
+		this.styleAttr(jQuery('.buyablefunnies_widget_content'),'display:block !important; opacity: 1');
+		jQuery('.buyablefunnies_widget_content').animate({opacity: 0}, function(){
 			// only call ajax if this funny doesn't exist in our object
-			if(BuyableFunniesWidget.funnies.hasOwnProperty(timestamp)){
-				BuyableFunniesWidget.showLoading(true);
-				BuyableFunniesWidget.current = BuyableFunniesWidget.funnies[timestamp].curr;
-				BuyableFunniesWidget.prev = BuyableFunniesWidget.funnies[timestamp].prev;
-				BuyableFunniesWidget.next = BuyableFunniesWidget.funnies[timestamp].next;
-				BuyableFunniesWidget.displayHTML();
+			//console.dir(BuyableFunniesEmbed.funnies);
+			//console.log(timestamp);
+			if(BuyableFunniesEmbed.funnies.hasOwnProperty(timestamp)){
+				BuyableFunniesEmbed.showLoading(true);
+				BuyableFunniesEmbed.current = BuyableFunniesEmbed.funnies[timestamp].curr;
+				BuyableFunniesEmbed.prev = BuyableFunniesEmbed.funnies[timestamp].prev;
+				BuyableFunniesEmbed.next = BuyableFunniesEmbed.funnies[timestamp].next;
+				BuyableFunniesEmbed.displayHTML();
 			}
 			else {
-				BuyableFunniesWidget.showLoading(true);
-				BuyableFunniesWidget.ajaxCall(BuyableFunniesWidget.ajax+'&key='+BuyableFunniesWidget.key+'&current='+timestamp,'BuyableFunniesWidget_CallBack',0);																  			}
+				BuyableFunniesEmbed.showLoading(true);
+				BuyableFunniesEmbed.ajaxCall(BuyableFunniesEmbed.ajax_widget+'&key='+BuyableFunniesEmbed.key+'&current='+timestamp,'BuyableFunniesWidget_CallBack',0,'widget');																  			}
 		});
 	},
 	finishCall : function(){
 		jQuery('.buyablefunnies_widget_content').waitForImages(function() {
-			BuyableFunniesWidget.hideLoading(false);
+			BuyableFunniesEmbed.hideLoading(false);
 			// All descendant images have loaded, now slide up.
-			jQuery('.buyablefunnies_widget_content').fadeIn('fast', function(){
-				BuyableFunniesWidget.busy = false;										 
+			BuyableFunniesEmbed.styleAttr(jQuery('.buyablefunnies_widget_content'),'display:block !important; opacity: 0');
+			jQuery('.buyablefunnies_widget_content').animate({opacity: 1}, function(){
+				BuyableFunniesEmbed.busy = false;										 
 			});
 		});
 		
 	},
 	hideLoading : function(set_busy){
-		jQuery('.buyablefunnies_widget_content_wrap').css('background-image', 'none');	
+		this.styleAttr(jQuery('.buyablefunnies_widget_content_wrap'),'background-image: none !important');	
 		if(set_busy) this.busy = false;
 	},
+	styleAttr : function(el, style) {
+		el.attr('style', el.attr('style') + '; ' + style);
+	},
 	showLoading : function(set_busy){
-		jQuery('.buyablefunnies_widget_content_wrap').css('background-image', 'url('+this.path+'bf-loader.gif)');	
+		this.styleAttr(jQuery('.buyablefunnies_widget_content_wrap'),'background-image: url('+this.path+'bf-loader.gif) !important');	
+		//jQuery('.buyablefunnies_widget_content_wrap').css('background-image', 'url('+this.path+'bf-loader.gif)');	
 		if(set_busy) this.busy = true;
 	},
 	displayHTML : function(){
 		if(this.font != ''){
 			// set the user determined font
-			jQuery('.buyablefunnies_widget').css('font-family',this.font);
+			this.styleAttr(jQuery('.buyablefunnies_widget'),'font-family:'+this.font+' !important');
 		}
 		
 		// display arrow and date
-		if(this.prev < this.start) jQuery('.buyablefunnies_widget_prev a').css('display','none');
-		else jQuery('.buyablefunnies_widget_prev a').css('display','block');
+		//console.log(this.start+' '+this.end+' '+this.prev+' '+this.next);
 		
-		if(this.next > this.end) jQuery('.buyablefunnies_widget_next a').css('display','none');
-		else jQuery('.buyablefunnies_widget_next a').css('display','block');
+		if(this.prev < this.start) this.styleAttr(jQuery('.buyablefunnies_widget_prev a'),'display:none !important');
+		else this.styleAttr(jQuery('.buyablefunnies_widget_prev a'),'display:block !important');
+		
+		if(this.next > this.end) this.styleAttr(jQuery('.buyablefunnies_widget_next a'),'display:none !important');
+		else this.styleAttr(jQuery('.buyablefunnies_widget_next a'),'display:block !important');
 		
 		jQuery('.buyablefunnies_widget_date').text(this.funnies[this.current].date_format);
 		
@@ -234,11 +311,11 @@ BuyableFunnies.prototype = {
 		jQuery('.buyablefunnies_widget_product1').attr('title',this.funnies[this.current].product[0].title);
 		jQuery('.buyablefunnies_widget_product2').attr('title',this.funnies[this.current].product[1].title);
 		
-		jQuery('.buyablefunnies_widget_product1 .buyablefunnies_widget_h4').text(this.funnies[this.current].product[0].text);
-		jQuery('.buyablefunnies_widget_product2 .buyablefunnies_widget_h4').text(this.funnies[this.current].product[1].text);
+		jQuery('.buyablefunnies_widget_product1 h4').text(this.funnies[this.current].product[0].text);
+		jQuery('.buyablefunnies_widget_product2 h4').text(this.funnies[this.current].product[1].text);
 		
-		jQuery('.buyablefunnies_widget_product1 .buyablefunnies_widget_h5').text(this.funnies[this.current].product[0].nickname);
-		jQuery('.buyablefunnies_widget_product2 .buyablefunnies_widget_h5').text(this.funnies[this.current].product[1].nickname);
+		jQuery('.buyablefunnies_widget_product1 h5').text(this.funnies[this.current].product[0].nickname);
+		jQuery('.buyablefunnies_widget_product2 h5').text(this.funnies[this.current].product[1].nickname);
 		
 		jQuery('.buyablefunnies_widget_product1 .buyablefunnies_widget_price').html(this.funnies[this.current].product[0].price);
 		jQuery('.buyablefunnies_widget_product2 .buyablefunnies_widget_price').html(this.funnies[this.current].product[1].price);
@@ -289,25 +366,25 @@ BuyableFunnies.prototype = {
 		//var bfw = this;
 		// Previous Day
 		jQuery('.buyablefunnies_widget_prev a').on('click',function(){
-			if(!BuyableFunniesWidget.busy && BuyableFunniesWidget.prev >= BuyableFunniesWidget.start) BuyableFunniesWidget.prepareCall(BuyableFunniesWidget.prev);
+			if(!BuyableFunniesEmbed.busy && BuyableFunniesEmbed.prev >= BuyableFunniesEmbed.start) BuyableFunniesEmbed.prepareCall(BuyableFunniesEmbed.prev);
 			return false;
 		});
 		// Previous Day
 		jQuery('.buyablefunnies_widget_next a').on('click',function(){
-			if(!BuyableFunniesWidget.busy && BuyableFunniesWidget.next <= BuyableFunniesWidget.end) BuyableFunniesWidget.prepareCall(BuyableFunniesWidget.next);
+			if(!BuyableFunniesEmbed.busy && BuyableFunniesEmbed.next <= BuyableFunniesEmbed.end) BuyableFunniesEmbed.prepareCall(BuyableFunniesEmbed.next);
 			return false;
 		});
 		
 		// Hover
 		jQuery('.buyablefunnies_widget_product').hover(function(){
-			jQuery(this).css('color', BuyableFunniesWidget.link_color);
+			BuyableFunniesEmbed.styleAttr(jQuery(this),'color:'+BuyableFunniesEmbed.link_color+' !important');
 		},
-		function(){ jQuery(this).css('color', '#000000'); });
+		function(){ BuyableFunniesEmbed.styleAttr(jQuery(this),'color:#000000 !important'); });
 	},
-	ajaxCall : function(url, callback, retry){
+	ajaxCall : function(url, callback, retry, mode){
 		jQuery.ajax({
 			url : url,
-			headers: { "cache-control": "no-cache" },
+			headers: {"cache-control": "no-cache"},
 			dataType : "jsonp",
 			type : 'get',
 			jsonp : "callback",
@@ -316,10 +393,10 @@ BuyableFunnies.prototype = {
 			error : function(xhr, status, thrown){
 				//console.log('status: '+status);
 				if(retry < 1) {
-					BuyableFunniesWidget.ajaxCall(url, callback, retry+1);
+					BuyableFunniesEmbed.ajaxCall(url, callback, retry+1, mode);
 				}
 				else {
-					BuyableFunniesWidget.errorContent();
+					if(mode == 'widget') BuyableFunniesEmbed.errorContent();
 				}
 			},
 			success : function(xhr, status, thrown){}
@@ -362,22 +439,30 @@ function scriptLoadHandler() {
 	main(); 
 }
 function bfReady(){
-	if(jQuery('.buyablefunnies_widget').length == 1){
+	if(jQuery('.buyablefunnies_embed').length){
 		window.clearInterval(rval);		
 		
-		
-
 		/*! waitForImages jQuery Plugin 2013-07-20 */
 		!function(a){var b="waitForImages";a.waitForImages={hasImageProperties:["backgroundImage","listStyleImage","borderImage","borderCornerImage","cursor"]},a.expr[":"].uncached=function(b){if(!a(b).is('img[src!=""]'))return!1;var c=new Image;return c.src=b.src,!c.complete},a.fn.waitForImages=function(c,d,e){var f=0,g=0;if(a.isPlainObject(arguments[0])&&(e=arguments[0].waitForAll,d=arguments[0].each,c=arguments[0].finished),c=c||a.noop,d=d||a.noop,e=!!e,!a.isFunction(c)||!a.isFunction(d))throw new TypeError("An invalid callback was supplied.");return this.each(function(){var h=a(this),i=[],j=a.waitForImages.hasImageProperties||[],k=/url\(\s*(['"]?)(.*?)\1\s*\)/g;e?h.find("*").addBack().each(function(){var b=a(this);b.is("img:uncached")&&i.push({src:b.attr("src"),element:b[0]}),a.each(j,function(a,c){var d,e=b.css(c);if(!e)return!0;for(;d=k.exec(e);)i.push({src:d[2],element:b[0]})})}):h.find("img:uncached").each(function(){i.push({src:this.src,element:this})}),f=i.length,g=0,0===f&&c.call(h[0]),a.each(i,function(e,i){var j=new Image;a(j).on("load."+b+" error."+b,function(a){return g++,d.call(i.element,g,f,"load"==a.type),g==f?(c.call(h[0]),!1):void 0}),j.src=i.src})})}}(jQuery);
 
+
+		// Delete extra widgets and begin
+		if(jQuery('.buyablefunnies_widget').length) {
+			if(jQuery('.buyablefunnies_widget').length > 1) jQuery(".buyablefunnies_widget:not(:first)").remove();
 		
-		// Pass off the BFW object
-		BuyableFunniesWidget.init();
+			// Pass off the BFE widget object
+			BuyableFunniesEmbed.initWidget();
+		}
+		if(jQuery('.buyablefunnies_custom').length) {
+			// Pass off the BFE custom object
+			BuyableFunniesEmbed.initCustom();
+		}
 	}
 }
 
 })(); // We call our anonymous function immediately
 
-var BuyableFunniesWidget = new BuyableFunnies();
-var BuyableFunniesWidget_CallBack = BuyableFunniesWidget.bfw_cb;
+var BuyableFunniesEmbed = new BuyableFunnies();
+var BuyableFunniesWidget_CallBack = BuyableFunniesEmbed.bfw_cb;
+var BuyableFunniesCustom_CallBack = BuyableFunniesEmbed.bfc_cb;
 /* Function when returning data */
