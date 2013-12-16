@@ -31,6 +31,7 @@ BuyableFunnies = function() {
 	
 	/* Processing status */
 	this.busy = false;
+	this.custom_events = false;
 	
 	/* Data to show if there is an error */
 	this.error = {
@@ -58,7 +59,6 @@ BuyableFunnies = function() {
 BuyableFunnies.prototype = {
 	bfw_cb : function(data){
 		//console.dir(data);
-		
 		// Check this.current to see if this the 1st return call
 		if(!BuyableFunniesEmbed.current){
 			// Set start and end timestamp
@@ -90,6 +90,7 @@ BuyableFunnies.prototype = {
 		//BuyableFunniesEmbed.hideLoading();
 	},
 	bfc_cb : function(data){
+		//console.dir(data);
 		jQuery.each(data, function(){
 			var init_html = '';
 			init_html += '<div class="buyablefunnies_custom_content buyablefunnies_custom_clearfix">';
@@ -128,6 +129,28 @@ BuyableFunnies.prototype = {
 			// Show the custom funny
 			BuyableFunniesEmbed.styleAttr(jQuery('#buyablefunnies_'+this.cfid),'display:block !important');
 		});
+		
+		//Custom click
+		if(!this.custom_events){
+			jQuery('.buyablefunnies_custom_product').on('click',function(){
+				var id = jQuery(this).parent().parent().attr('id');
+				var ida = id.split('_');
+				var cfid = parseInt(ida[1]);
+				var prod;
+				if(jQuery(this).hasClass('buyablefunnies_custom_product1')) prod = 1;
+				else prod = 2;
+				//console.log('cfid: '+cfid+', prod: '+prod);
+				
+				BuyableFunniesEmbed.ajaxCall(BuyableFunniesEmbed.ajax_custom+'&key='+BuyableFunniesEmbed.key+'&id='+cfid+'&prod='+prod,'BuyableFunniesCustomClick_CallBack',0,'custom');
+				//return false;
+			});
+			BuyableFunniesEmbed.custom_events = true;
+		}
+	},
+	bfcc_cb : function(data){
+		/*console.dir(data);
+		console.log(data.member_ip);
+		console.log(data.visitor_ip);*/
 	},
 	errorContent : function(){
 		// display products
@@ -233,6 +256,7 @@ BuyableFunnies.prototype = {
 		});
 		var scfo = JSON.stringify( cfo );	
 		if(this.key == '') this.key = this.getParams(this.script)['key'];
+		
 		this.ajaxCall(this.ajax_custom+'&key='+this.key+'&ids='+scfo,'BuyableFunniesCustom_CallBack',0,'custom');
 	},
 	prepareCall : function(timestamp){
@@ -380,6 +404,7 @@ BuyableFunnies.prototype = {
 			BuyableFunniesEmbed.styleAttr(jQuery(this),'color:'+BuyableFunniesEmbed.link_color+' !important');
 		},
 		function(){ BuyableFunniesEmbed.styleAttr(jQuery(this),'color:#000000 !important'); });
+		
 	},
 	ajaxCall : function(url, callback, retry, mode){
 		jQuery.ajax({
@@ -465,4 +490,5 @@ function bfReady(){
 var BuyableFunniesEmbed = new BuyableFunnies();
 var BuyableFunniesWidget_CallBack = BuyableFunniesEmbed.bfw_cb;
 var BuyableFunniesCustom_CallBack = BuyableFunniesEmbed.bfc_cb;
+var BuyableFunniesCustomClick_CallBack = BuyableFunniesEmbed.bfcc_cb;
 /* Function when returning data */

@@ -2,7 +2,7 @@
 /*
 Plugin Name: Buyable Funnies
 Plugin URI: http://buyablefunnies.com
-Description: This plugin inserts your Buyable Funnies content onto your website. Note that the free widget and custom funnies data are retrieved from the Buyable Funnies site. Visit <a href="options-general.php?page=buyable_funnies">the settings page</a> to enter your User Key.
+Description: This plugin inserts your Buyable Funnies content onto your website. Visit <a href="options-general.php?page=buyable_funnies">the settings page</a> to enter your User Key and to get directions to inserting your content.
 Version: 1.0
 Author: Landon Fears
 Author URI: http://buyablefunnies.com
