@@ -30,6 +30,7 @@ add_option( 'buyablefunnies_key' );
 add_action( 'admin_menu', 'buyablefunnies_admin_menu');
 add_action( 'wp_enqueue_scripts', 'buyablefunnies_load_script' ); 
 add_action( 'widgets_init', 'buyablefunnies_load_widget' );
+add_action( 'widgets_init', 'buyablefunnies_load_custom' );
 
 /**
  * add MENU
@@ -55,7 +56,7 @@ function buyablefunnies_admin_options() {
 		<form name="form1" method="post" action="'.str_replace( '%7E', '~', $_SERVER['REQUEST_URI']).'">
 			'.wp_nonce_field('update-options').'
 			<p>Enter your Buyable Funnies User Key below.</p>
-			<p>This will appear in your User Area when you get the code for the Free Widget. If you are not a <a href="http://buyablefunnies.com/join" target="_blank">Buyable Funnies Member</a> you will not have a User Key.</p>
+			<p>This will appear in your User Area when you get the code for the Free Widget or Custom Funnies. If you are not a <a href="http://buyablefunnies.com/join" target="_blank">Buyable Funnies Member</a> you will not have a User Key.</p>
 			<table class="form-table">
 				<tr valign="top">
 					<th scope="row">User Key</th>
@@ -67,6 +68,8 @@ function buyablefunnies_admin_options() {
 			</p>
 			<h3>Free Widget</h3>
 			<p> To add the free widget to a page, use either use Wordpress Widgets "Buyable Funnies Widget" or the shortcode [buyable_funnies_widget align="xxx"], where align has a value of "left", "right", "center", or left blank.</p>
+			<h3>Custom Funnies</h3>
+			<p>To add your custom funnies, use use Wordpress Widgets "Custom Buyable Funnies" or the shortcode [buyable_funnies_custom id="xxx" align="xxx"], where id is the custom identifier, and align has a value of "left", "right", "center", or left blank.</p>
 		</form>
 	</div>';
 }
@@ -138,9 +141,77 @@ class buyablefunnies_widget extends WP_Widget {
 } // Class wpb_widget ends here
 
 
+// Creating the custom
+class buyablefunnies_custom extends WP_Widget {
+	function __construct() {
+		parent::__construct(
+			// Base ID of your widget
+			'buyablefunnies_custom', 
+			// Widget name will appear in UI
+			__('Custom Buyable Funnies', 'buyablefunnies_custom_domain'), 
+			// Widget description
+			array( 'description' => __( 'Inserts Custom Buyable Funnies', 'buyablefunnies_custom_domain' ) ) 
+		);
+	}
+
+	// Creating widget front-end
+	// This is where the action happens
+	public function widget( $args, $instance ) {
+		$aligno = $instance['align'];
+		if($aligno == 'left') $align = 'style="float:left !important"';
+		if($aligno == 'right') $align = 'style="float:right !important"';
+		if($aligno == 'center') $align = 'style="margin:0 auto !important"';
+		$id = $instance['id'];
+		
+		// This is where you run the code and display the output
+		echo __( '<div class="buyablefunnies_embed buyablefunnies_custom" id="buyablefunnies_'.$id.'" '.$align.'></div>', 'buyablefunnies_custom_domain' );
+	}
+		
+	// Widget Backend 
+	public function form( $instance ) {
+		if ( isset( $instance[ 'align' ] ) ) $align = $instance[ 'align' ];
+		else $align = __( '', 'buyablefunnies_custom_domain' );
+		
+		if ( isset( $instance[ 'id' ] ) ) $id = $instance[ 'id' ];
+		else $id = __( '', 'buyablefunnies_custom_domain' );
+		
+		// Widget admin form
+		$aval = esc_attr( $align );
+		$anone = ($aval == 'none') ? 'selected="selected"' : '';
+		$aleft = ($aval == 'left') ? 'selected="selected"' : '';
+		$aright = ($aval == 'right') ? 'selected="selected"' : '';
+		$acenter = ($aval == 'center') ? 'selected="selected"' : '';
+		echo '<p>
+			<label for="'.($this->get_field_id( 'align' )).'">Align:</label> 
+			<select id="'.($this->get_field_id( 'align' )).'" class="widefat" name="'.($this->get_field_name( 'align' )).'">
+				<option '.$anone.' value="">None</option>
+				<option '.$aleft.' value="left">Left</option>
+				<option '.$aright.' value="right">Right</option>
+				<option '.$acenter.' value="center">Center</option>
+			</select>
+		</p>';
+		
+		echo '<p>
+			<label for="'.($this->get_field_id( 'id' )).'">Custom Funnies ID:</label> 
+			<input class="widefat" id="'.($this->get_field_id( 'id' )).'" name="'.($this->get_field_name( 'id' )).'" type="text" value="'.esc_attr( $id ).'" />
+		</p>';
+	}
+	
+// Updating widget replacing old instances with new
+	public function update( $new_instance, $old_instance ) {
+		$instance = array();
+		$instance['align'] = ( ! empty( $new_instance['align'] ) ) ? strip_tags( $new_instance['align'] ) : '';
+		$instance['id'] = ( ! empty( $new_instance['id'] ) ) ? strip_tags( $new_instance['id'] ) : '';
+		return $instance;
+	}
+} // Class wpb_custom ends here
+
 // Register and load the widget
 function buyablefunnies_load_widget() {
 	register_widget( 'buyablefunnies_widget' );
+}
+function buyablefunnies_load_custom() {
+	register_widget( 'buyablefunnies_custom' );
 }
 
 // Create Shortcode
@@ -152,4 +223,17 @@ function buyable_funnies_widget_shortcode($atts){
 		if($atts['align'] == 'center') $align = 'style="margin:0 auto !important"';
 	}
 	return '<div class="buyablefunnies_embed buyablefunnies_widget" '.$align.'></div>';
+}
+
+add_shortcode( 'buyable_funnies_custom', 'buyable_funnies_custom_shortcode' );
+function buyable_funnies_custom_shortcode($atts){
+	if(array_key_exists('id',$atts)){
+		if(array_key_exists('align',$atts)){
+			if($atts['align'] == 'left') $align = 'style="float:left !important"';
+			if($atts['align'] == 'right') $align = 'style="float:right !important"';
+			if($atts['align'] == 'center') $align = 'style="margin:0 auto !important"';
+		}
+		return '<div class="buyablefunnies_embed buyablefunnies_custom" id="buyablefunnies_'.$atts['id'].'" '.$align.'></div>';
+	}
+	else return '';
 }

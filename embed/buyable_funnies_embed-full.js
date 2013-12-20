@@ -19,11 +19,9 @@ BuyableFunnies = function() {
 	/* Scripts, styles and paths */
 	this.script = 'buyable_funnies_embed.js';
 	this.domain = 'http://buyablefunnies.com/';
-	this.path = 'https://d30exyil9uoqwq.cloudfront.net/';
+	this.path = 'http://d30exyil9uoqwq.cloudfront.net/';
 	this.css_widget = this.path+'buyable_funnies_widget.css';
-	this.css_custom = this.path+'buyable_funnies_custom.css';
 	this.ajax_widget = this.domain+'?buyable_funnies_widget=yes';
-	this.ajax_custom = this.domain+'?buyable_funnies_custom=yes';
 	this.widget_title = 'Buyable Funnies';
 	
 	/* Save retrieved funnies */
@@ -31,7 +29,6 @@ BuyableFunnies = function() {
 	
 	/* Processing status */
 	this.busy = false;
-	this.custom_events = false;
 	
 	/* Data to show if there is an error */
 	this.error = {
@@ -88,69 +85,6 @@ BuyableFunnies.prototype = {
 		
 		BuyableFunniesEmbed.displayHTML();
 		//BuyableFunniesEmbed.hideLoading();
-	},
-	bfc_cb : function(data){
-		//console.dir(data);
-		jQuery.each(data, function(){
-			var init_html = '';
-			init_html += '<div class="buyablefunnies_custom_content buyablefunnies_custom_clearfix">';
-			init_html += '<a class="buyablefunnies_custom_product buyablefunnies_custom_product1" href="'+this.url1+'" title="'+this.title1+'" target="_blank">';
-			init_html += '<h4>'+this.text1+'</h4>';
-			init_html += '<div class="buyablefunnies_custom_img_wrap">';
-			init_html += '<div class="buyablefunnies_custom_img"><img src="'+this.filename1+'" alt="'+this.title1+'" title="'+this.title1+'" /></div>';
-			init_html += '</div>';
-			if(this.dname1 != '') init_html += '<h5>'+this.dname1+'</h5>';
-			if(this.price1 != '') init_html += '<div class="buyablefunnies_custom_price">'+this.price2+'</div>';
-			init_html += '</a>';
-			
-			init_html += '<a class="buyablefunnies_custom_product buyablefunnies_custom_product2" href="'+this.url2+'" title="'+this.title2+'" target="_blank">';
-			init_html += '<h4>'+this.text2+'</h4>';
-			init_html += '<div class="buyablefunnies_custom_img_wrap">';
-			init_html += '<div class="buyablefunnies_custom_img"><img src="'+this.filename2+'" alt="'+this.title2+'" title="'+this.title2+'" class="" /></div>';
-			init_html += '</div>';
-			if(this.dname2 != '') init_html += '<h5>'+this.dname2+'</h5>';
-			if(this.price2 != '') init_html += '<div class="buyablefunnies_custom_price">'+this.price2+'</div>';
-			init_html += '</div>';
-			init_html += '</a>';
-			
-			//console.log('put data in: #buyablefunnies_'+this.cfid);
-			jQuery('#buyablefunnies_'+this.cfid).html(init_html);
-			
-			// Update hover link color
-			var custom_data = this;
-			jQuery('#buyablefunnies_'+this.cfid+' .buyablefunnies_custom_product').hover(function(){
-				BuyableFunniesEmbed.styleAttr(jQuery(this),'color:'+custom_data.hcolor+' !important');
-			},
-			function(){ BuyableFunniesEmbed.styleAttr(jQuery(this),'color:#000000 !important'); });
-			
-			// Update font
-			if(this.font != '') BuyableFunniesEmbed.styleAttr(jQuery('#buyablefunnies_'+this.cfid),'font-family:'+this.font+' !important');
-		
-			// Show the custom funny
-			BuyableFunniesEmbed.styleAttr(jQuery('#buyablefunnies_'+this.cfid),'display:block !important');
-		});
-		
-		//Custom click
-		if(!this.custom_events){
-			jQuery('.buyablefunnies_custom_product').on('click',function(){
-				var id = jQuery(this).parent().parent().attr('id');
-				var ida = id.split('_');
-				var cfid = parseInt(ida[1]);
-				var prod;
-				if(jQuery(this).hasClass('buyablefunnies_custom_product1')) prod = 1;
-				else prod = 2;
-				//console.log('cfid: '+cfid+', prod: '+prod);
-				
-				BuyableFunniesEmbed.ajaxCall(BuyableFunniesEmbed.ajax_custom+'&key='+BuyableFunniesEmbed.key+'&id='+cfid+'&prod='+prod,'BuyableFunniesCustomClick_CallBack',0,'custom');
-				//return false;
-			});
-			BuyableFunniesEmbed.custom_events = true;
-		}
-	},
-	bfcc_cb : function(data){
-		/*console.dir(data);
-		console.log(data.member_ip);
-		console.log(data.visitor_ip);*/
 	},
 	errorContent : function(){
 		// display products
@@ -471,17 +405,13 @@ function bfReady(){
 			/*! waitForImages jQuery Plugin 2013-07-20 */
 			!function(a){var b="waitForImages";a.waitForImages={hasImageProperties:["backgroundImage","listStyleImage","borderImage","borderCornerImage","cursor"]},a.expr[":"].uncached=function(b){if(!a(b).is('img[src!=""]'))return!1;var c=new Image;return c.src=b.src,!c.complete},a.fn.waitForImages=function(c,d,e){var f=0,g=0;if(a.isPlainObject(arguments[0])&&(e=arguments[0].waitForAll,d=arguments[0].each,c=arguments[0].finished),c=c||a.noop,d=d||a.noop,e=!!e,!a.isFunction(c)||!a.isFunction(d))throw new TypeError("An invalid callback was supplied.");return this.each(function(){var h=a(this),i=[],j=a.waitForImages.hasImageProperties||[],k=/url\(\s*(['"]?)(.*?)\1\s*\)/g;e?h.find("*").addBack().each(function(){var b=a(this);b.is("img:uncached")&&i.push({src:b.attr("src"),element:b[0]}),a.each(j,function(a,c){var d,e=b.css(c);if(!e)return!0;for(;d=k.exec(e);)i.push({src:d[2],element:b[0]})})}):h.find("img:uncached").each(function(){i.push({src:this.src,element:this})}),f=i.length,g=0,0===f&&c.call(h[0]),a.each(i,function(e,i){var j=new Image;a(j).on("load."+b+" error."+b,function(a){return g++,d.call(i.element,g,f,"load"==a.type),g==f?(c.call(h[0]),!1):void 0}),j.src=i.src})})}}(jQuery);
 		}
-
+		
 		// Delete extra widgets and begin
 		if(jQuery('.buyablefunnies_widget').length) {
 			if(jQuery('.buyablefunnies_widget').length > 1) jQuery(".buyablefunnies_widget:not(:first)").remove();
 		
 			// Pass off the BFE widget object
 			BuyableFunniesEmbed.initWidget();
-		}
-		if(jQuery('.buyablefunnies_custom').length) {
-			// Pass off the BFE custom object
-			BuyableFunniesEmbed.initCustom();
 		}
 	}
 }
@@ -490,6 +420,4 @@ function bfReady(){
 
 var BuyableFunniesEmbed = new BuyableFunnies();
 var BuyableFunniesWidget_CallBack = BuyableFunniesEmbed.bfw_cb;
-var BuyableFunniesCustom_CallBack = BuyableFunniesEmbed.bfc_cb;
-var BuyableFunniesCustomClick_CallBack = BuyableFunniesEmbed.bfcc_cb;
 /* Function when returning data */
