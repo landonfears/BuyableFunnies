@@ -431,5 +431,5 @@ function bfReady(){
 
 var BuyableFunniesEmbed = new BuyableFunnies();
 var BuyableFunniesWidget_CallBack = BuyableFunniesEmbed.bfw_cb;
-var BuyableFunnieswidgetClick_CallBack = BuyableFunniesEmbed.bfwc_cb;
+var BuyableFunniesWidgetClick_CallBack = BuyableFunniesEmbed.bfwc_cb;
 /* Function when returning data */
