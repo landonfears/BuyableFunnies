@@ -86,6 +86,9 @@ BuyableFunnies.prototype = {
 		BuyableFunniesEmbed.displayHTML();
 		//BuyableFunniesEmbed.hideLoading();
 	},
+	bfwc_cb : function(data){
+		//console.dir(data);
+	},
 	errorContent : function(){
 		// display products
 		jQuery('.buyablefunnies_widget_product1').attr('href',this.error.url1);
@@ -339,6 +342,14 @@ BuyableFunnies.prototype = {
 		},
 		function(){ BuyableFunniesEmbed.styleAttr(jQuery(this),'color:#000000 !important'); });
 		
+		// Product Click	
+		jQuery('.buyablefunnies_widget_product').on('click',function(){
+			if(jQuery(this).hasClass('buyablefunnies_widget_product1')) prod = 1;
+			else prod = 2;
+			
+			BuyableFunniesEmbed.ajaxCall(BuyableFunniesEmbed.ajax_widget+'&key='+BuyableFunniesEmbed.key+'&prod='+prod+'&current='+BuyableFunniesEmbed.current,'BuyableFunniesWidgetClick_CallBack',0,'widget-click');
+			//return false;
+		});
 	},
 	ajaxCall : function(url, callback, retry, mode){
 		jQuery.ajax({
@@ -420,4 +431,5 @@ function bfReady(){
 
 var BuyableFunniesEmbed = new BuyableFunnies();
 var BuyableFunniesWidget_CallBack = BuyableFunniesEmbed.bfw_cb;
+var BuyableFunnieswidgetClick_CallBack = BuyableFunniesEmbed.bfwc_cb;
 /* Function when returning data */
